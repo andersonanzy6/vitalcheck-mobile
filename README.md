@@ -1,17 +1,16 @@
-# vitalcheck_mobile
+# VitalCheck Mobile
 
-A new Flutter project.
+Flutter patient and doctor app for VitalCheck. The UI follows the web patient/doctor flows and shared booking and chat patterns.
 
-## Getting Started
+## Run
 
-This project is a starting point for a Flutter application.
+`flutter pub get`
+`flutter run --dart-define=API_BASE_URL=https://vitalcheck-56uj.onrender.com/api`
 
-A few resources to get you started if this is your first Flutter project:
+Default API base is `https://vitalcheck-56uj.onrender.com/api`. API requests use the `{ success, data }` envelope. Access and refresh tokens are stored with flutter_secure_storage.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Release APK
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+`flutter build apk --release --dart-define=API_BASE_URL=https://vitalcheck-56uj.onrender.com/api`
+
+Features include role-based patient and doctor navigation, authentication, appointment booking and management, provider discovery, profile/medical records/payments, notifications, Socket.IO messaging and WebRTC calls using backend ICE server configuration.
