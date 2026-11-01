@@ -49,6 +49,28 @@ jobs:
           PY
 
       - run: flutter pub get
+
+      - name: Align flutter_webrtc compile SDK with AndroidX dependencies
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          config = json.loads(Path('.dart_tool/package_config.json').read_text())
+          packages = {p['name']: p for p in config['packages']}
+          package = packages.get('flutter_webrtc')
+          if not package:
+              raise SystemExit('flutter_webrtc package missing from package_config.json')
+          package_root = (Path('.dart_tool') / package['rootUri']).resolve()
+          gradle_file = package_root / 'android' / 'build.gradle'
+          text = gradle_file.read_text()
+          old = 'compileSdkVersion 31'
+          new = 'compileSdkVersion 36'
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one {old!r} in {gradle_file}, found {text.count(old)}')
+          gradle_file.write_text(text.replace(old, new, 1))
+          print(f'Updated build-only plugin compileSdk setting in {gradle_file}')
+          PY
+
       - run: flutter build apk --release
 
       - name: Upload release APK
