@@ -1,0 +1,60 @@
+name: Build release APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 ndk;28.2.13676358'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.9'
+          cache: true
+          pub-cache: true
+
+      - name: Limit Gradle memory for hosted runner
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          props = Path('android/gradle.properties')
+          text = props.read_text()
+          old = 'org.gradle.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=4G'
+          new = 'org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=2G'
+          if old not in text:
+              raise SystemExit('Expected Gradle memory settings were not found; refusing to modify config')
+          props.write_text(text.replace(old, new, 1))
+          PY
+
+      - run: flutter pub get
+      - run: flutter build apk --release
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: vitalcheck-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
