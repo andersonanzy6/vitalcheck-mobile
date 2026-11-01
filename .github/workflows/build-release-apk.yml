@@ -55,12 +55,14 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
+          from urllib.parse import urlparse
           config = json.loads(Path('.dart_tool/package_config.json').read_text())
           packages = {p['name']: p for p in config['packages']}
           package = packages.get('flutter_webrtc')
           if not package:
               raise SystemExit('flutter_webrtc package missing from package_config.json')
-          package_root = (Path('.dart_tool') / package['rootUri']).resolve()
+          root_uri = package['rootUri']
+          package_root = Path(urlparse(root_uri).path) if root_uri.startswith('file:') else (Path('.dart_tool') / root_uri).resolve()
           gradle_file = package_root / 'android' / 'build.gradle'
           text = gradle_file.read_text()
           old = 'compileSdkVersion 31'
